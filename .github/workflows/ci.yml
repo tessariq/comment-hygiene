@@ -25,6 +25,17 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
         with:
           version: 2026.9.3
+      - name: Warm the Tree-sitter parser cache
+        run: |
+          for attempt in 1 2 3; do
+            if mise exec -- uncomment --dry-run fixtures/comment-slop.py; then
+              exit 0
+            fi
+            if [[ "$attempt" -eq 3 ]]; then
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
       - name: Check published commit history
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
