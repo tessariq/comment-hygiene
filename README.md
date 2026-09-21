@@ -62,6 +62,8 @@ that flag is supplied.
 See [`skills/comment-hygiene/SKILL.md`](skills/comment-hygiene/SKILL.md) for the
 agent-facing workflow and decision rule.
 
+Optional coverage follow-ups are recorded in [`notes.md`](notes.md).
+
 ## Verification
 
 ```sh
