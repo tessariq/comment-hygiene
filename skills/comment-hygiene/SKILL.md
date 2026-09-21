@@ -13,15 +13,65 @@ from the code itself.
 
 - Review only files changed in the current task unless the user explicitly asks
   for a wider cleanup.
-- Never use a regex or text replacement to identify comments. Use `uncomment`
-  through this repository's Taskfile so strings that resemble comments are safe.
+- Never use a regex or text replacement to identify comments. In the source
+  repository, use `uncomment` through its Taskfile; from an installed copy, use
+  the prerequisite and direct command below so strings that resemble comments
+  are safe.
 - `uncomment` identifies comment nodes; it does not judge whether a comment is
   useful and it cannot rewrite prose. Make that judgment from the code and its
   surrounding contract.
 - Do not remove license notices, generated-file markers, formatter/linter/tool
   directives, or a comment the user explicitly asked to retain.
 
-## Workflow
+## Installed-skill runtime
+
+An installed copy must run against the target repository without assuming that
+the Comment Hygiene source repository, its `Taskfile.yml`, Mise configuration,
+or `scripts/comment-hygiene` wrapper is present. The distributed audit uses the
+separately installed `uncomment` 3.7.0 command on `PATH`; that external
+dependency is intentionally not bundled into the skill.
+
+Before auditing from an installed copy, run this prerequisite check in the same
+shell as the commands below. It resolves an actual executable and leaves its
+verified path in `$uncomment_path`:
+
+```sh
+uncomment_path="$(command -v uncomment 2>/dev/null || true)"
+if [ -z "$uncomment_path" ] || [ "${uncomment_path#*/}" = "$uncomment_path" ] || [ ! -f "$uncomment_path" ] || [ ! -x "$uncomment_path" ]; then
+  printf '%s\n' 'comment-hygiene: uncomment 3.7.0 is required as an executable on PATH; install the published release binary from https://github.com/Goldziher/uncomment/releases.' >&2
+  exit 2
+fi
+if version="$("$uncomment_path" --version 2>/dev/null)"; then
+  :
+else
+  printf '%s\n' 'comment-hygiene: could not run uncomment --version; check the active executable before continuing.' >&2
+  exit 2
+fi
+if [ "$version" != "uncomment 3.7.0" ]; then
+  printf '%s\n' 'comment-hygiene: expected uncomment 3.7.0; check the active binary before continuing.' >&2
+  exit 2
+fi
+```
+
+From any target repository, preview ordinary comments directly with the
+location-independent command below. It is read-only and does not use a
+Taskfile, Mise, or this repository's wrapper:
+
+```sh
+NO_COLOR=1 "$uncomment_path" --dry-run --verbose --diff -- "path/to/changed-file.py"
+```
+
+To include documentation, TODO, and FIXME candidates in the same read-only
+preview, add the explicit broad-mode flags:
+
+```sh
+NO_COLOR=1 "$uncomment_path" --dry-run --verbose --diff --remove-doc --remove-todo --remove-fixme -- "path/to/changed-file.py"
+```
+
+Do not use a mutating `uncomment` command as a substitute for the review below;
+the installed skill's audit boundary is preview-only.
+
+## Source-repository workflow
 
 1. From the `comment-hygiene` repository root, install the pinned tools once:
 
@@ -34,7 +84,7 @@ from the code itself.
    does not write files:
 
    ```sh
-   mise exec -- task audit -- path/to/changed-file.py
+   mise exec -- task audit -- "path/to/changed-file.py"
    ```
 
 3. Read each candidate with its adjacent code. Delete comments that merely restate
@@ -46,7 +96,7 @@ from the code itself.
    them in an AST-safe preview without writing files:
 
    ```sh
-   mise exec -- task audit-all -- path/to/changed-file.py
+   mise exec -- task audit-all -- "path/to/changed-file.py"
    ```
 
    Retain public API documentation where the project convention requires it. A
@@ -58,7 +108,7 @@ from the code itself.
    preview first and then run:
 
    ```sh
-   mise exec -- task strip -- path/to/changed-file.py
+   mise exec -- task strip -- "path/to/changed-file.py"
    ```
 
    `strip-all` also removes docs, TODOs, and FIXMEs; use it only with explicit

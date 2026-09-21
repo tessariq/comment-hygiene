@@ -46,14 +46,14 @@ mise run setup
 Preview ordinary comments in one or more changed files:
 
 ```sh
-mise exec -- task audit -- path/to/file.py path/to/another.ts
+mise exec -- task audit -- "path/to/file.py" "path/to/another.ts"
 ```
 
 Review the diff, then remove the ordinary comments you have intentionally
 selected:
 
 ```sh
-mise exec -- task strip -- path/to/file.py
+mise exec -- task strip -- "path/to/file.py"
 ```
 
 ## Commands

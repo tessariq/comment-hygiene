@@ -25,6 +25,7 @@ tasks:
     desc: Run behavior and repository-policy tests
     cmds:
       - "{{.TASKFILE_DIR}}/scripts/test.sh"
+      - "{{.TASKFILE_DIR}}/scripts/test-installed-runtime.sh"
       - "{{.TASKFILE_DIR}}/scripts/check-author-test.sh"
       - "{{.TASKFILE_DIR}}/scripts/check-commit-msg-test.sh"
       - "{{.TASKFILE_DIR}}/scripts/check-push-messages-test.sh"
