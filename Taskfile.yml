@@ -1,0 +1,33 @@
+version: "3"
+
+tasks:
+  audit:
+    desc: Preview ordinary comments that uncomment would remove; pass one or more paths after --
+    cmds:
+      - "{{.TASKFILE_DIR}}/scripts/comment-hygiene audit {{.CLI_ARGS}}"
+
+  audit-all:
+    desc: Broaden the preview to documentation, TODO, and FIXME comments; still writes nothing
+    cmds:
+      - "{{.TASKFILE_DIR}}/scripts/comment-hygiene audit --all {{.CLI_ARGS}}"
+
+  strip:
+    desc: Remove ordinary comments in place; pass one or more paths after --
+    cmds:
+      - "{{.TASKFILE_DIR}}/scripts/comment-hygiene strip --apply {{.CLI_ARGS}}"
+
+  strip-all:
+    desc: Remove ordinary, documentation, TODO, and FIXME comments in place; requires review first
+    cmds:
+      - "{{.TASKFILE_DIR}}/scripts/comment-hygiene strip --all --apply {{.CLI_ARGS}}"
+
+  test:
+    desc: Exercise the real uncomment CLI on a representative Python fixture
+    cmds:
+      - "{{.TASKFILE_DIR}}/scripts/test.sh"
+
+  check:
+    desc: Check scripts and run the behavioral test
+    cmds:
+      - "bash -n {{.TASKFILE_DIR}}/scripts/comment-hygiene {{.TASKFILE_DIR}}/scripts/test.sh"
+      - task test

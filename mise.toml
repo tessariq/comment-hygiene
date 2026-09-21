@@ -1,0 +1,16 @@
+[tools]
+rust = "1.98.1"
+"cargo:uncomment" = "3.7.0"
+"aqua:go-task/task" = "3.53.1"
+
+[tasks.setup]
+description = "Install the pinned uncomment CLI and Task runner"
+run = "mise install"
+
+[tasks.check]
+description = "Validate shell scripts and run the Taskfile's behavioral test"
+run = ["bash -n scripts/comment-hygiene scripts/test.sh", "mise exec -- task check"]
+
+[tasks.test]
+description = "Run the real uncomment CLI against the comment-hygiene fixture"
+run = "mise exec -- task test"
