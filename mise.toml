@@ -1,6 +1,5 @@
 [tools]
-rust = "1.98.1"
-"cargo:uncomment" = "3.7.0"
+"github:Goldziher/uncomment" = "3.7.0"
 "aqua:go-task/task" = "3.53.1"
 lefthook = "1.13.6"
 "github:tessariq/taskrail" = "0.4.0"

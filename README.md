@@ -30,8 +30,9 @@ It does **not** use an LLM to classify or rewrite comments.
 - [Mise](https://mise.jdx.dev/)
 - Git and Bash
 
-Mise provisions the pinned Rust toolchain, `uncomment`, Task, Lefthook, and
-Taskrail versions used by this repository.
+Mise provisions the pinned `uncomment`, Task, Lefthook, and Taskrail versions used
+by this repository. `uncomment` is installed from its published release binary,
+so contributors do not need a local Rust toolchain.
 
 ## Quick start
 
