@@ -14,7 +14,7 @@ from the code itself.
 - Review only files changed in the current task unless the user explicitly asks
   for a wider cleanup.
 - Never use a regex or text replacement to identify comments. Use `uncomment`
-  through the prototype's Taskfile so strings that resemble comments are safe.
+  through this repository's Taskfile so strings that resemble comments are safe.
 - `uncomment` identifies comment nodes; it does not judge whether a comment is
   useful and it cannot rewrite prose. Make that judgment from the code and its
   surrounding contract.
@@ -23,7 +23,7 @@ from the code itself.
 
 ## Workflow
 
-1. From `prototypes/comment-hygiene`, install the pinned tools once:
+1. From the `comment-hygiene` repository root, install the pinned tools once:
 
    ```sh
    mise trust

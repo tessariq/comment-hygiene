@@ -2,15 +2,28 @@
 rust = "1.98.1"
 "cargo:uncomment" = "3.7.0"
 "aqua:go-task/task" = "3.53.1"
+lefthook = "1.13.6"
+"github:tessariq/taskrail" = "0.4.0"
 
 [tasks.setup]
-description = "Install the pinned uncomment CLI and Task runner"
-run = "mise install"
+description = "Install pinned tools and opt-in Git hooks"
+run = [
+  "mise install",
+  "lefthook install",
+]
 
 [tasks.check]
-description = "Validate shell scripts and run the Taskfile's behavioral test"
-run = ["bash -n scripts/comment-hygiene scripts/test.sh", "mise exec -- task check"]
+description = "Run policy, syntax, planning, and behavioral checks"
+run = "mise exec -- task check"
 
 [tasks.test]
 description = "Run the real uncomment CLI against the comment-hygiene fixture"
 run = "mise exec -- task test"
+
+[tasks."workflow:status"]
+description = "Show Taskrail work status"
+run = "taskrail status"
+
+[tasks."workflow:validate"]
+description = "Validate Taskrail specifications and tasks"
+run = "taskrail validate"

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "task_id": "T-001-retrofit-the-standalone-v1-0-release",
+  "task_title": "Retrofit the standalone v1.0 release",
+  "result": "pass",
+  "summary": "Standalone checks, history scans, simplification, and independent review passed.",
+  "generated_at": "2026-09-21T14:16:25Z",
+  "spec_ref": "specs/v1.0.0.md#acceptance-criteria",
+  "artifacts": [
+    "planning/artifacts/verify/T-001-retrofit-the-standalone-v1-0-release/20260921T141625Z/plan.md",
+    "planning/artifacts/verify/T-001-retrofit-the-standalone-v1-0-release/20260921T141625Z/report.md"
+  ]
+}

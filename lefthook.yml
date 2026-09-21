@@ -1,0 +1,26 @@
+# Local Git hooks are opt-in; CI remains the authoritative gate.
+# Install them with `mise run setup` or `task hooks:install`.
+pre-commit:
+  parallel: true
+  commands:
+    author-identity:
+      run: bash scripts/check-author.sh
+    guard-checkers:
+      glob: "{lefthook.yml,Taskfile.yml,scripts/check-commit-msg.sh,scripts/check-attribution.sh,scripts/check-author.sh,scripts/check-push-messages.sh,scripts/check-*-test.sh}"
+      run: task test:commit-msg && task test:author && task test:push-messages
+    check:
+      run: task check
+
+commit-msg:
+  commands:
+    conventional:
+      run: bash scripts/check-commit-msg.sh {1}
+
+pre-push:
+  commands:
+    message-policy:
+      priority: 1
+      run: bash scripts/check-push-messages.sh
+    checks:
+      priority: 2
+      run: task check

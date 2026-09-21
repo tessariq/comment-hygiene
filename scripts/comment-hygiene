@@ -25,7 +25,7 @@ fail() {
 
 command_name="${UNCOMMENT_BIN:-uncomment}"
 command -v "$command_name" >/dev/null 2>&1 || fail \
-  "uncomment is unavailable; run 'mise run setup' from this prototype first"
+  "uncomment is unavailable; run 'mise run setup' from the repository root first"
 
 [[ $# -gt 0 ]] || {
   usage >&2
@@ -45,6 +45,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --apply)
       apply=true
+      ;;
+    --)
+      shift
+      paths+=("$@")
+      break
       ;;
     --help|-h)
       usage
@@ -70,11 +75,11 @@ fi
 case "$action" in
   audit)
     NO_COLOR=1 "$command_name" --dry-run --verbose --diff \
-      "${removal_flags[@]}" "${paths[@]}"
+      "${removal_flags[@]}" -- "${paths[@]}"
     ;;
   strip)
     "$apply" || fail "strip writes files; rerun with --apply after reviewing audit output"
-    "$command_name" "${removal_flags[@]}" "${paths[@]}"
+    "$command_name" "${removal_flags[@]}" -- "${paths[@]}"
     ;;
   --help|-h)
     usage
