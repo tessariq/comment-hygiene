@@ -1,14 +1,15 @@
 ---
 schema_version: 1
-updated_at: "2026-09-21T17:51:06Z"
+updated_at: "2026-09-21T18:14:18Z"
 active_spec_version: v1.2.0
 active_spec_path: specs/v1.2.0.md
 current_task: ""
 current_task_title: ""
-status_summary: idle
-blockers: []
-next_action: Select the next eligible task
-last_verification_result: pass for T-004-implement-portable-installed-skill-runtime at 2026-09-21T17:51:01Z
+status_summary: blocked
+blockers:
+    - 'T-005-verify-clean-agent-skill-installations: Blocked pending publication of T-004: clean install from public main resolves revision 2ab968c, whose installed SKILL.md lacks the portable runtime. Local T-004 commit 2c4c4a9 is unpushed; pushing requires explicit authorization.'
+next_action: Resolve blocker on T-005-verify-clean-agent-skill-installations
+last_verification_result: pass for T-003-expand-behavioral-coverage at 2026-09-21T18:14:18Z
 relevant_artifacts: []
 continuation_notes:
     - This repository is using manual Taskrail-style workflow scaffolding until the product replaces more of the bootstrap steps.
@@ -26,19 +27,19 @@ continuation_notes:
 
 ## Status
 
-- idle
+- blocked
 
 ## Blockers
 
-- None
+- T-005-verify-clean-agent-skill-installations: Blocked pending publication of T-004: clean install from public main resolves revision 2ab968c, whose installed SKILL.md lacks the portable runtime. Local T-004 commit 2c4c4a9 is unpushed; pushing requires explicit authorization.
 
 ## Last Verification
 
-- pass for T-004-implement-portable-installed-skill-runtime at 2026-09-21T17:51:01Z
+- pass for T-003-expand-behavioral-coverage at 2026-09-21T18:14:18Z
 
 ## Next Action
 
-- Select the next eligible task
+- Resolve blocker on T-005-verify-clean-agent-skill-installations
 
 ## Relevant Artifacts
 
@@ -50,8 +51,8 @@ continuation_notes:
 
 ## Task Counts
 
-- todo: 3
+- todo: 1
 - in_progress: 0
-- completed: 3
-- blocked: 0
+- completed: 4
+- blocked: 1
 - cancelled: 0

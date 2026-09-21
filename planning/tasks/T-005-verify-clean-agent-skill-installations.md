@@ -1,12 +1,12 @@
 ---
 id: T-005-verify-clean-agent-skill-installations
 title: Verify clean agent-skill installations
-status: todo
+status: blocked
 priority: high
 spec_ref: specs/v1.2.0.md#clean-environment-verification
 dependencies:
     - T-004-implement-portable-installed-skill-runtime
-updated_at: "2026-09-21T16:10:17Z"
+updated_at: "2026-09-21T17:55:58Z"
 ---
 
 # T-005-verify-clean-agent-skill-installations Verify clean agent-skill installations
@@ -45,3 +45,4 @@ discovery result from a filesystem-only installation result.
   the source repository's root Taskfile to make an installed skill appear to work.
 - If a required agent cannot run non-interactively, provide a bounded manual
   verification recipe and leave its support status unverified until performed.
+- 2026-09-21T17:55:58Z: Blocked pending publication of T-004: clean install from public main resolves revision 2ab968c, whose installed SKILL.md lacks the portable runtime. Local T-004 commit 2c4c4a9 is unpushed; pushing requires explicit authorization.
