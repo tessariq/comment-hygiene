@@ -129,6 +129,4 @@ distribution and coverage work belongs to the [v1.2 specification](specs/v1.2.0.
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE). Hook-policy files adapted from
-Taskrail retain the same license; see
-[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for provenance.
+Licensed under the [Apache License 2.0](LICENSE).
