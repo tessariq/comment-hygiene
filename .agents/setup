@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_root"
+
+setup_log_dir="${HOME}/.cache/amp/logs"
+mkdir -p "$setup_log_dir"
+exec > >(tee -a "$setup_log_dir/setup.log") 2>&1
+
+run_step() {
+  local name="$1"
+  shift
+  local started_at=$SECONDS
+
+  printf '\n[%s] %s\n' "$(date -u +%FT%TZ)" "$name"
+  "$@"
+  printf '[%s] %s completed in %ss\n' \
+    "$(date -u +%FT%TZ)" "$name" "$((SECONDS - started_at))"
+}
+
+install_system_packages() {
+  local -a packages=()
+
+  command -v curl >/dev/null 2>&1 || packages+=(curl)
+  command -v git >/dev/null 2>&1 || packages+=(git)
+  command -v unzip >/dev/null 2>&1 || packages+=(unzip)
+  [[ -s /etc/ssl/certs/ca-certificates.crt ]] || packages+=(ca-certificates)
+
+  if ((${#packages[@]} == 0)); then
+    echo "required system packages are already installed"
+    return 0
+  fi
+
+  echo "installing missing system packages: ${packages[*]}"
+  if ((EUID == 0)); then
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
+  else
+    command -v sudo >/dev/null 2>&1 || {
+      echo "setup: sudo is required to install: ${packages[*]}" >&2
+      return 1
+    }
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
+  fi
+}
+
+mise_version="2026.9.3"
+mise_install_path="${HOME}/.local/bin/mise"
+
+mise_version_matches() {
+  local candidate="$1"
+  [[ -x "$candidate" ]] \
+    && "$candidate" --version 2>/dev/null \
+      | grep -Eq "^${mise_version}([[:space:]]|$)"
+}
+
+install_mise() {
+  mkdir -p "$(dirname "$mise_install_path")"
+
+  if ! mise_version_matches "$mise_install_path"; then
+    echo "installing Mise ${mise_version}"
+    curl -fsSL https://mise.run \
+      | MISE_VERSION="v${mise_version}" \
+        MISE_INSTALL_PATH="$mise_install_path" \
+        MISE_INSTALL_SKIP_IF_EXISTS=1 \
+        sh
+  fi
+
+  mise_version_matches "$mise_install_path" || {
+    echo "setup: expected Mise ${mise_version} at ${mise_install_path}" >&2
+    "$mise_install_path" --version >&2 || true
+    return 1
+  }
+
+  export PATH="$(dirname "$mise_install_path"):$PATH"
+}
+
+trust_project_config() {
+  "$mise_install_path" trust "$project_root/mise.toml"
+}
+
+install_pinned_tools() {
+  "$mise_install_path" install
+}
+
+install_git_hooks() {
+  "$mise_install_path" exec -- lefthook install
+}
+
+warm_parser_cache() {
+  local attempt
+  for attempt in 1 2 3; do
+    if "$mise_install_path" exec -- uncomment --dry-run fixtures/comment-slop.py; then
+      return 0
+    fi
+    if [[ "$attempt" -eq 3 ]]; then
+      return 1
+    fi
+    echo "Tree-sitter parser warmup failed; retrying in $((attempt * 5))s"
+    sleep $((attempt * 5))
+  done
+}
+
+write_mise_profile_hook() {
+  local profile_file="${HOME}/.bash_profile"
+  local marker="# comment-hygiene: activate Mise for this repository"
+
+  if grep -Fqx "$marker" "$profile_file" 2>/dev/null; then
+    echo "Mise login-shell hook is already present"
+    return 0
+  fi
+
+  touch "$profile_file"
+  {
+    printf '\n%s\n' "$marker"
+    printf 'if [[ -z "${MISE_SHELL:-}" && ( "${PWD}" == %q || "${PWD}" == %q/* ) ]]; then\n' \
+      "$project_root" "$project_root"
+    printf '  export PATH="$HOME/.local/bin:$PATH"\n'
+    printf '  if command -v mise >/dev/null 2>&1; then\n'
+    printf '    eval "$(mise activate bash)"\n'
+    printf '  fi\n'
+    printf 'fi\n'
+  } >>"$profile_file"
+}
+
+run_step "Install system prerequisites" install_system_packages
+run_step "Install Mise ${mise_version}" install_mise
+run_step "Trust the project Mise configuration" trust_project_config
+run_step "Install pinned project tools" install_pinned_tools
+run_step "Install opt-in Git hooks" install_git_hooks
+run_step "Warm the Tree-sitter parser cache" warm_parser_cache
+run_step "Persist the repository-scoped Mise login hook" write_mise_profile_hook
+
+printf '\nOrb setup complete for %s\n' "$project_root"

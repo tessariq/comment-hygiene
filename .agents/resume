@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+profile_file="${HOME}/.bash_profile"
+marker="# comment-hygiene: activate Mise for this repository"
+mise_bin="${HOME}/.local/bin/mise"
+
+if [[ ! -x "$mise_bin" ]]; then
+  mise_bin="$(type -P mise || true)"
+fi
+
+if [[ -z "$mise_bin" ]]; then
+  echo "orb resume: Mise is unavailable; rerun .agents/setup" >&2
+  exit 1
+fi
+
+"$mise_bin" --version >/dev/null
+[[ -f "$project_root/mise.toml" ]]
+grep -Fqx "$marker" "$profile_file"
