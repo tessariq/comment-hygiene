@@ -1,11 +1,11 @@
 ---
 id: T-002-evaluate-skills-ecosystem-installation
 title: Evaluate skills ecosystem installation
-status: todo
+status: completed
 priority: medium
 spec_ref: specs/v1.2.0.md#installer-and-discovery-contract
 dependencies: []
-updated_at: "2026-09-21T16:10:17Z"
+updated_at: "2026-09-21T16:59:05Z"
 ---
 
 # T-002-evaluate-skills-ecosystem-installation Evaluate skills ecosystem installation
@@ -43,3 +43,5 @@ in the resulting support matrix.
 
 - This task decides the contract; it does not claim clean installation or a
   functional distributed runtime. Those are T-005 and T-004 respectively.
+- 2026-09-21T16:58:48Z: verification pass
+- 2026-09-21T16:59:05Z: Decision record committed with skills@1.7.0 source contract, paths, copy/symlink and update/removal observations, primary docs, Amp discovery evidence, explicit unverified cells, and T-004/T-005 boundaries.
