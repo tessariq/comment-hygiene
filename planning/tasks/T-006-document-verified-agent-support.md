@@ -1,12 +1,12 @@
 ---
 id: T-006-document-verified-agent-support
 title: Document verified agent support
-status: todo
+status: completed
 priority: medium
 spec_ref: specs/v1.2.0.md#support-documentation
 dependencies:
     - T-005-verify-clean-agent-skill-installations
-updated_at: "2026-09-21T16:10:17Z"
+updated_at: "2026-09-22T07:50:19Z"
 ---
 
 # T-006-document-verified-agent-support Document verified agent support
@@ -41,3 +41,5 @@ runtime without asking users to copy skill instructions into agent-specific file
 - Do not document a target as supported merely because its expected directory is
   known. The required threshold is the corresponding discovery and runtime result
   from T-005.
+- 2026-09-22T07:50:08Z: verification pass
+- 2026-09-22T07:50:19Z: Documented verified Amp support, explicit unverified agent cells, exact project/user lifecycle commands, generated-copy behavior, runtime prerequisite, read-only audit, and shared-target cleanup caveats.

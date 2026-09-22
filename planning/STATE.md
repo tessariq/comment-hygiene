@@ -1,14 +1,14 @@
 ---
 schema_version: 1
-updated_at: "2026-09-22T07:16:34Z"
+updated_at: "2026-09-22T07:50:19Z"
 active_spec_version: v1.2.0
 active_spec_path: specs/v1.2.0.md
 current_task: ""
 current_task_title: ""
 status_summary: idle
 blockers: []
-next_action: 'Start task T-006-document-verified-agent-support: Document verified agent support'
-last_verification_result: pass for T-005-verify-clean-agent-skill-installations at 2026-09-22T07:16:11Z
+next_action: Select the next eligible task
+last_verification_result: pass for T-006-document-verified-agent-support at 2026-09-22T07:50:08Z
 relevant_artifacts: []
 continuation_notes:
     - This repository is using manual Taskrail-style workflow scaffolding until the product replaces more of the bootstrap steps.
@@ -34,11 +34,11 @@ continuation_notes:
 
 ## Last Verification
 
-- pass for T-005-verify-clean-agent-skill-installations at 2026-09-22T07:16:11Z
+- pass for T-006-document-verified-agent-support at 2026-09-22T07:50:08Z
 
 ## Next Action
 
-- Start task T-006-document-verified-agent-support: Document verified agent support
+- Select the next eligible task
 
 ## Relevant Artifacts
 
@@ -50,8 +50,8 @@ continuation_notes:
 
 ## Task Counts
 
-- todo: 1
+- todo: 0
 - in_progress: 0
-- completed: 5
+- completed: 6
 - blocked: 0
 - cancelled: 0

@@ -82,8 +82,144 @@ agents a conservative review workflow and a simple decision rule:
 > Keep or rewrite it when it conveys intent, constraints, or rationale that the
 > code does not make clear.
 
-Package-manager installation for agent-skill ecosystems is planned rather than
-claimed today. See the [v1.2 specification](specs/v1.2.0.md) for that roadmap.
+The direct-clone workflow above and the distributed installation below are
+separate. A distributed install uses the canonical public source
+[`skills/comment-hygiene/SKILL.md`](skills/comment-hygiene/SKILL.md); installer
+outputs are generated files, not alternate instruction sources. Do not edit an
+installed copy as an independent fork.
+
+### Verified agent support
+
+The clean-install verification used `skills@1.7.0` against public source
+revision `e329be0487bfd077b06334141d2c7a01bb73b1e7`. It installed the source
+from that immutable revision, checked the installed runtime in a target with no
+Comment Hygiene Taskfile, Mise configuration, or source wrapper, and removed
+each temporary installation afterward. The full scrubbed record is in
+[`T-005 clean-install evidence`](planning/artifacts/verification/T-005-verify-clean-agent-skill-installations/report.md).
+
+| Agent | Tested agent version | Installed destination | Discovery and runtime result | Support |
+| --- | --- | --- | --- | --- |
+| Claude Code | unavailable in the verification environment | `.claude/skills/comment-hygiene/SKILL.md` (regular file observed) | Installation/runtime/cleanup passed; the `claude` executable and discovery were unavailable | **Unverified** |
+| Codex | unavailable in the verification environment | `.agents/skills/comment-hygiene/SKILL.md` (regular file observed) | Installation/runtime/cleanup passed; the `codex` executable and discovery were unavailable | **Unverified** |
+| Amp | `0.0.1790006436-gaf5042` | `.agents/skills/comment-hygiene/SKILL.md` (regular file observed) | `amp skills list --json` found the installed `workspace-agents` skill; the ordinary and broad read-only audits and cleanup passed | **Verified** |
+| OpenCode | unavailable in the verification environment | `.agents/skills/comment-hygiene/SKILL.md` (regular file observed) | Installation/runtime/cleanup passed; the `opencode` executable and discovery were unavailable | **Unverified** |
+
+Only Amp is verified. A known installer path is not evidence of agent support;
+do not infer compatibility with Claude Code, Codex, OpenCode, other agents, or
+other agent versions from this table.
+
+For the single verified Amp target, `skills@1.7.0` creates a regular
+installer-managed file at the path shown above. When all four agent targets are
+selected, v1.7.0 creates a regular canonical copy under
+`.agents/skills/comment-hygiene` and a Claude Code symlink under
+`.claude/skills/comment-hygiene`; pass `--copy` when regular copies are
+required.
+
+### Install, update, and remove Amp
+
+The project target is `.agents/skills/comment-hygiene/SKILL.md`; the user-local
+`--global` target is `~/.agents/skills/comment-hygiene/SKILL.md`.
+
+Install the verified project-local target from the repository root of the
+project where the skill should be available:
+
+```sh
+npx --yes skills@1.7.0 add \
+  https://github.com/tessariq/comment-hygiene \
+  --skill comment-hygiene \
+  --agent amp \
+  --yes
+```
+
+For a user-local installation available across projects, use the global target:
+
+```sh
+npx --yes skills@1.7.0 add \
+  https://github.com/tessariq/comment-hygiene \
+  --global \
+  --skill comment-hygiene \
+  --agent amp \
+  --yes
+```
+
+The corresponding update commands are:
+
+```sh
+# Project-local installation.
+npx --yes skills@1.7.0 update -p -y
+
+# User-local installation.
+npx --yes skills@1.7.0 update -g -y
+```
+
+Updates are not guaranteed to be target-exclusive. The observed `skills@1.7.0`
+project update after an Amp-only install also created a Claude Code symlink and
+an `agent/skills/comment-hygiene` directory. Review the resulting skill list
+after updating and remove unintended targets. In that state, removing only
+`--agent amp` can delete the shared `.agents/skills` source while leaving a
+dangling Claude Code symlink; use the all-agent cleanup below instead.
+
+Remove a project-local or user-local installation that was created for Amp
+alone with:
+
+```sh
+# Project-local installation.
+npx --yes skills@1.7.0 remove comment-hygiene --agent amp --yes
+
+# User-local installation.
+npx --yes skills@1.7.0 remove comment-hygiene --global --agent amp --yes
+```
+
+For a multi-agent project install, remove every selected agent in one command
+so the shared `.agents/skills` source and any agent links are cleaned together:
+
+```sh
+npx --yes skills@1.7.0 remove comment-hygiene \
+  --agent claude-code codex amp opencode \
+  --yes
+```
+
+For a shared user-local installation, include `--global` in the same cleanup:
+
+```sh
+npx --yes skills@1.7.0 remove comment-hygiene \
+  --global \
+  --agent claude-code codex amp opencode \
+  --yes
+```
+
+The CLI may leave `skills-lock.json` and empty container directories after
+removal. Do not delete another agent's skills when cleaning a shared target.
+
+### Installed runtime
+
+The distributed skill requires the separately installed `uncomment 3.7.0`
+release binary. It is intentionally not bundled with the skill. Check the
+prerequisite in the same shell as the audit commands:
+
+```sh
+uncomment_path="$(command -v uncomment 2>/dev/null || true)"
+if [ -z "$uncomment_path" ] || [ "${uncomment_path#*/}" = "$uncomment_path" ] || [ ! -f "$uncomment_path" ] || [ ! -x "$uncomment_path" ]; then
+  printf '%s\n' 'comment-hygiene: install uncomment 3.7.0 from https://github.com/Goldziher/uncomment/releases.' >&2
+  exit 2
+fi
+[ "$("$uncomment_path" --version 2>/dev/null)" = 'uncomment 3.7.0' ] || {
+  printf '%s\n' 'comment-hygiene: expected uncomment 3.7.0.' >&2
+  exit 2
+}
+```
+
+From any target repository, preview ordinary comments without a Taskfile, Mise
+configuration, or copied wrapper:
+
+```sh
+NO_COLOR=1 "$uncomment_path" --dry-run --verbose --diff -- "path/to/changed-file.py"
+```
+
+To include documentation, TODO, and FIXME candidates, add
+`--remove-doc --remove-todo --remove-fixme`. These commands are read-only;
+review the diff and keep the installed skill's explicit judgment and apply
+safety rules.
 
 ## Safety model
 
