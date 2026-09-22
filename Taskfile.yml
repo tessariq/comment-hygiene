@@ -30,6 +30,11 @@ tasks:
       - "{{.TASKFILE_DIR}}/scripts/check-commit-msg-test.sh"
       - "{{.TASKFILE_DIR}}/scripts/check-push-messages-test.sh"
 
+  test:clean-install:
+    desc: Verify public skill installations in isolated temporary targets
+    cmds:
+      - "{{.TASKFILE_DIR}}/scripts/test-clean-install.sh"
+
   test:author:
     desc: Exercise the commit-author policy
     cmds:
