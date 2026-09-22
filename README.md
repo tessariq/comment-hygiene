@@ -2,138 +2,104 @@
 
 [![CI](https://github.com/tessariq/comment-hygiene/actions/workflows/ci.yml/badge.svg)](https://github.com/tessariq/comment-hygiene/actions/workflows/ci.yml)
 
-Review and remove low-value code comments without mistaking comment-like text in
+Review and remove low-value code comments without confusing comment-like text in
 strings for comments.
 
-Comment Hygiene combines the Rust
-[`uncomment`](https://github.com/Goldziher/uncomment) CLI with a small safety
-wrapper and a portable agent skill. Tree-sitter identifies actual comment nodes;
-you or your coding agent decide which comments are useful.
+Comment Hygiene uses the Rust [`uncomment`](https://github.com/Goldziher/uncomment)
+CLI to find actual comment nodes with Tree-sitter. It does not use an LLM to
+classify or rewrite comments: people and coding agents decide which candidates
+are worth keeping.
 
-## Why use it?
+## Start here
 
-Comments that repeat the code create noise and become stale. Text-only removal is
-risky, though: `https://example.test/#fragment` and similar string data can look
-like comments to a regular expression.
+Choose the workflow that fits your use case:
 
-This project keeps detection and judgment separate:
+- **Working in this repository?** Use the [direct-clone workflow](#direct-clone-workflow).
+- **Using the portable skill in another repository?** See
+  [install the skill](#install-the-skill). Amp is the currently verified
+  installer integration.
 
-1. `uncomment` finds comments from the language syntax tree.
-2. `audit` shows a dry-run diff without writing files.
-3. A human or agent keeps comments that explain intent, constraints, or rationale.
-4. `strip` requires an explicit apply step before it changes files.
+The safety model is the same in both cases: preview first, review the diff, and
+apply only the removals you intend.
 
-It does **not** use an LLM to classify or rewrite comments.
+## How it works
 
-## Requirements
+1. `uncomment` identifies comments from the language syntax tree.
+2. `audit` presents a read-only diff of candidates.
+3. You decide whether each comment adds intent, constraints, or rationale.
+4. `strip` makes changes only after an explicit apply step.
+
+This avoids treating string content such as `https://example.test/#fragment` as
+a comment, which a text-only approach can do.
+
+## Direct-clone workflow
+
+### Requirements
 
 - [Mise](https://mise.jdx.dev/)
 - Git and Bash
 
-Mise provisions the pinned `uncomment`, Task, Lefthook, and Taskrail versions used
-by this repository. `uncomment` is installed from its published release binary,
-so contributors do not need a local Rust toolchain.
+Mise provisions this repository's pinned versions of `uncomment`, Task,
+Lefthook, and Taskrail. No local Rust toolchain is required.
 
-## Quick start
+### Set up and preview
 
 ```sh
 git clone https://github.com/tessariq/comment-hygiene.git
 cd comment-hygiene
 mise trust
 mise run setup
-```
 
-Preview ordinary comments in one or more changed files:
-
-```sh
+# Preview ordinary comments in one or more files. This does not write files.
 mise exec -- task audit -- "path/to/file.py" "path/to/another.ts"
 ```
 
-Review the diff, then remove the ordinary comments you have intentionally
+Read the resulting diff. Remove only the ordinary comments you have deliberately
 selected:
 
 ```sh
 mise exec -- task strip -- "path/to/file.py"
 ```
 
-## Commands
+### Commands
 
-| Command | Behavior | Writes files? |
+| Command | What it does | Writes files? |
 | --- | --- | --- |
 | `task audit -- PATH...` | Preview ordinary comments | No |
-| `task audit-all -- PATH...` | Also preview docs, TODO, and FIXME comments | No |
-| `task strip -- PATH...` | Remove ordinary comments after the wrapper supplies `--apply` | Yes |
-| `task strip-all -- PATH...` | Also remove docs, TODO, and FIXME comments | Yes |
+| `task audit-all -- PATH...` | Also preview docs, TODOs, and FIXMEs | No |
+| `task strip -- PATH...` | Remove ordinary comments after explicit apply | Yes |
+| `task strip-all -- PATH...` | Also remove docs, TODOs, and FIXMEs | Yes |
 | `mise run test` | Run the representative AST-safety fixture | Temporary copy only |
 | `mise run check` | Run policy, syntax, planning, and behavioral checks | No |
 
 `strip-all` is deliberately broad. Use it only after reviewing `audit-all` and
-explicitly deciding that documentation and tracked follow-ups should be removed.
-Recognized tooling directives and comments protected with `~keep` remain subject
-to `uncomment`'s preservation rules.
+deciding that documentation and tracked follow-ups should be removed.
 
-## Agent skill
+## Install the skill
 
-The portable skill at
-[`skills/comment-hygiene/SKILL.md`](skills/comment-hygiene/SKILL.md) gives coding
-agents a conservative review workflow and a simple decision rule:
+The portable skill is agent-agnostic: it defines the same conservative review
+process for any compatible coding agent, without requiring this repository's
+Taskfile, Mise configuration, or wrapper script.
 
-> Delete a comment when a competent reader can infer it from the current code.
-> Keep or rewrite it when it conveys intent, constraints, or rationale that the
-> code does not make clear.
+> **Verified installation:** Amp is the only integration verified so far. The
+> canonical skill is not Amp-specific, but do not infer discovery support for
+> Claude Code, Codex, OpenCode, other agents, or other versions from an
+> installer path alone. See [verified support](#verified-support) for scope.
 
-The direct-clone workflow above and the distributed installation below are
-separate. A distributed install uses the canonical public source
-[`skills/comment-hygiene/SKILL.md`](skills/comment-hygiene/SKILL.md); installer
-outputs are generated files, not alternate instruction sources. Do not edit an
-installed copy as an independent fork.
+### Install with Amp
 
-### Verified agent support
-
-The clean-install verification used `skills@1.7.0` against public source
-revision `e329be0487bfd077b06334141d2c7a01bb73b1e7`. It installed the source
-from that immutable revision, checked the installed runtime in a target with no
-Comment Hygiene Taskfile, Mise configuration, or source wrapper, and removed
-each temporary installation afterward. The full scrubbed record is in
-[`T-005 clean-install evidence`](planning/artifacts/verification/T-005-verify-clean-agent-skill-installations/report.md).
-
-| Agent | Tested agent version | Installed destination | Discovery and runtime result | Support |
-| --- | --- | --- | --- | --- |
-| Claude Code | unavailable in the verification environment | `.claude/skills/comment-hygiene/SKILL.md` (regular file observed) | Installation/runtime/cleanup passed; the `claude` executable and discovery were unavailable | **Unverified** |
-| Codex | unavailable in the verification environment | `.agents/skills/comment-hygiene/SKILL.md` (regular file observed) | Installation/runtime/cleanup passed; the `codex` executable and discovery were unavailable | **Unverified** |
-| Amp | `0.0.1790006436-gaf5042` | `.agents/skills/comment-hygiene/SKILL.md` (regular file observed) | `amp skills list --json` found the installed `workspace-agents` skill; the ordinary and broad read-only audits and cleanup passed | **Verified** |
-| OpenCode | unavailable in the verification environment | `.agents/skills/comment-hygiene/SKILL.md` (regular file observed) | Installation/runtime/cleanup passed; the `opencode` executable and discovery were unavailable | **Unverified** |
-
-Only Amp is verified. A known installer path is not evidence of agent support;
-do not infer compatibility with Claude Code, Codex, OpenCode, other agents, or
-other agent versions from this table.
-
-For the single verified Amp target, `skills@1.7.0` creates a regular
-installer-managed file at the path shown above. When all four agent targets are
-selected, v1.7.0 creates a regular canonical copy under
-`.agents/skills/comment-hygiene` and a Claude Code symlink under
-`.claude/skills/comment-hygiene`; pass `--copy` when regular copies are
-required.
-
-### Install, update, and remove Amp
-
-The project target is `.agents/skills/comment-hygiene/SKILL.md`; the user-local
-`--global` target is `~/.agents/skills/comment-hygiene/SKILL.md`.
-
-Install the verified project-local target from the repository root of the
-project where the skill should be available:
+Run one of these commands from the project that should receive the skill, or use
+the global form to make it available across your projects.
 
 ```sh
+# Project-local installation.
 npx --yes skills@1.7.0 add \
   https://github.com/tessariq/comment-hygiene \
   --skill comment-hygiene \
   --agent amp \
   --yes
-```
 
-For a user-local installation available across projects, use the global target:
-
-```sh
+# User-local installation.
 npx --yes skills@1.7.0 add \
   https://github.com/tessariq/comment-hygiene \
   --global \
@@ -142,60 +108,46 @@ npx --yes skills@1.7.0 add \
   --yes
 ```
 
-The corresponding update commands are:
+The project target is `.agents/skills/comment-hygiene/SKILL.md`; the global
+target is `~/.agents/skills/comment-hygiene/SKILL.md`. These are generated,
+installer-managed copies of the canonical
+[`skills/comment-hygiene/SKILL.md`](skills/comment-hygiene/SKILL.md). Do not
+edit an installed copy as an independent fork.
+
+### Update or remove an Amp installation
 
 ```sh
-# Project-local installation.
+# Update: project-local / user-local.
 npx --yes skills@1.7.0 update -p -y
-
-# User-local installation.
 npx --yes skills@1.7.0 update -g -y
-```
 
-Updates are not guaranteed to be target-exclusive. The observed `skills@1.7.0`
-project update after an Amp-only install also created a Claude Code symlink and
-an `agent/skills/comment-hygiene` directory. Review the resulting skill list
-after updating and remove unintended targets. In that state, removing only
-`--agent amp` can delete the shared `.agents/skills` source while leaving a
-dangling Claude Code symlink; use the all-agent cleanup below instead.
-
-Remove a project-local or user-local installation that was created for Amp
-alone with:
-
-```sh
-# Project-local installation.
+# Remove an Amp-only installation: project-local / user-local.
 npx --yes skills@1.7.0 remove comment-hygiene --agent amp --yes
-
-# User-local installation.
 npx --yes skills@1.7.0 remove comment-hygiene --global --agent amp --yes
 ```
 
-For a multi-agent project install, remove every selected agent in one command
-so the shared `.agents/skills` source and any agent links are cleaned together:
+If the installation is shared by several agents, remove all of those targets in
+one command so shared source files and links are cleaned together:
 
 ```sh
+# Add --global for a shared user-local installation.
 npx --yes skills@1.7.0 remove comment-hygiene \
   --agent claude-code codex amp opencode \
   --yes
 ```
 
-For a shared user-local installation, include `--global` in the same cleanup:
+The observed `skills@1.7.0` project update after an Amp-only install also
+created a Claude Code symlink and an `agent/skills/comment-hygiene` directory.
+Review the installed skill list after updating. Removing only `--agent amp` in
+that state can leave a dangling Claude Code symlink. The CLI may also leave
+`skills-lock.json` and empty container directories; do not delete another
+agent's skills during cleanup.
 
-```sh
-npx --yes skills@1.7.0 remove comment-hygiene \
-  --global \
-  --agent claude-code codex amp opencode \
-  --yes
-```
-
-The CLI may leave `skills-lock.json` and empty container directories after
-removal. Do not delete another agent's skills when cleaning a shared target.
-
-### Installed runtime
+### Use the installed skill
 
 The distributed skill requires the separately installed `uncomment 3.7.0`
-release binary. It is intentionally not bundled with the skill. Check the
-prerequisite in the same shell as the audit commands:
+release binary on `PATH`; it is intentionally not bundled. Confirm that exact
+version in the same shell you will use for an audit:
 
 ```sh
 uncomment_path="$(command -v uncomment 2>/dev/null || true)"
@@ -209,28 +161,48 @@ fi
 }
 ```
 
-From any target repository, preview ordinary comments without a Taskfile, Mise
-configuration, or copied wrapper:
+Then preview ordinary comments from any target repository. This command is
+read-only:
 
 ```sh
 NO_COLOR=1 "$uncomment_path" --dry-run --verbose --diff -- "path/to/changed-file.py"
 ```
 
 To include documentation, TODO, and FIXME candidates, add
-`--remove-doc --remove-todo --remove-fixme`. These commands are read-only;
-review the diff and keep the installed skill's explicit judgment and apply
-safety rules.
+`--remove-doc --remove-todo --remove-fixme`. Review the diff and follow the
+skill's explicit judgment and safety rules; do not substitute a mutating direct
+`uncomment` command for that review.
 
-## Safety model
+## Verified support
 
-- Audits are read-only.
-- Mutating wrapper calls require `--apply`; public Task targets add it only for
-  the explicit `strip` commands.
-- License notices, generated-file markers, formatter directives, and explicitly
-  protected comments should not be removed.
-- A broad candidate list is never permission for bulk deletion.
+Clean-install verification used `skills@1.7.0` with public source revision
+`e329be0487bfd077b06334141d2c7a01bb73b1e7`. It installed from that immutable
+revision into a target without Comment Hygiene's Taskfile, Mise configuration,
+or wrapper, ran the installed read-only workflow, and removed every temporary
+installation afterward.
+
+| Agent | Tested version | Result |
+| --- | --- | --- |
+| Amp | `0.0.1790006436-gaf5042` | **Verified** — `amp skills list --json` discovered the installed `workspace-agents` skill; ordinary and broad audits and cleanup passed. |
+| Claude Code | Unavailable | **Unverified** — installation, runtime, and cleanup passed, but the executable and discovery were unavailable. |
+| Codex | Unavailable | **Unverified** — installation, runtime, and cleanup passed, but the executable and discovery were unavailable. |
+| OpenCode | Unavailable | **Unverified** — installation, runtime, and cleanup passed, but the executable and discovery were unavailable. |
+
+The full scrubbed record, including observed destination types, is in the
+[`T-005 clean-install evidence`](planning/artifacts/verification/T-005-verify-clean-agent-skill-installations/report.md).
+
+## Safety and limitations
+
+- Audits are read-only; the repository's mutating commands add `--apply` only
+  for `strip` and `strip-all`.
+- Keep license notices, generated-file markers, formatter or linter directives,
+  and comments explicitly protected with `~keep`.
+- A broad candidate list is not permission for bulk deletion.
 - Project-specific `.uncommentrc.toml` rules can change preservation behavior;
   inspect them before relying on a preview.
+- Syntax-aware detection cannot decide whether a comment is accurate or useful.
+- The fixture covers a representative Python path, not every language supported
+  by `uncomment`.
 
 ## Development
 
@@ -239,10 +211,8 @@ mise run setup
 mise run check
 ```
 
-Git hooks are opt-in and installed by `mise run setup`. Lefthook runs the same
-fast checks used in CI, enforces Conventional Commit messages with descriptive
-bodies, and rejects automated attribution in commit history. See
-[`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
+`mise run setup` installs opt-in Git hooks. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution and commit rules.
 
 This repository uses [Taskrail](https://github.com/tessariq/taskrail) for
 versioned specifications and tracked follow-up work:
@@ -251,17 +221,6 @@ versioned specifications and tracked follow-up work:
 mise run workflow:status
 mise run workflow:validate
 ```
-
-The [v1.0 specification](specs/v1.0.0.md) records the existing behavior. Future
-distribution and coverage work belongs to the [v1.2 specification](specs/v1.2.0.md).
-
-## Limitations
-
-- Syntax-aware detection cannot determine whether a comment is accurate or useful.
-- `uncomment` previews are human-readable diffs, not a stable JSON analysis API.
-- The fixture covers a representative Python path, not every language supported
-  by `uncomment`.
-- Comment Hygiene does not measure downstream model quality or hallucination rates.
 
 ## License
 
