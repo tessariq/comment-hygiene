@@ -1,5 +1,22 @@
 # Contributing
 
+Humans and AI agents both contribute here. Agentic coding and AI-assisted
+contributions are welcome. This guide contains the human-facing rules; use the
+active specification and repository checks for the full process.
+
+## AI-assisted contributions
+
+AI-generated and AI-assisted pull requests are welcome. Two rules apply:
+
+1. **You own the diff.** Whoever opens the pull request is accountable for
+   every line, AI-written or not. “The model wrote it” is not a review
+   exemption.
+2. **No bot attribution.** Do not add `Co-Authored-By: <bot>` or `Generated
+   with …` trailers. The contributor’s name belongs on the commit; the AI is a
+   tool, not a co-author.
+
+The same quality gate applies regardless of how the code was produced.
+
 ## Setup
 
 Install [Mise](https://mise.jdx.dev/), then provision the pinned tools and opt-in
