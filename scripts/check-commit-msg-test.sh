@@ -52,6 +52,7 @@ assert_rejects body-over-72 "test: reject long body lines
 
 $body_73" '72 characters'
 assert_rejects slugged-task $'feat: add scope (T-001-scope)\n\nExplain the change.' 'task references'
+assert_rejects prefixed-task $'feat: T-001 add scope\n\nExplain the change.' 'task references'
 assert_rejects attribution $'feat: add scope\n\nExplain it.\n\nCo-Authored-By: Bot <bot@example.com>' 'automated-attribution'
 assert_rejects session-link $'feat: add scope\n\nExplain it.\n\nAmp-Thread: https://ampcode.com/threads/T-1' 'automated-attribution'
 

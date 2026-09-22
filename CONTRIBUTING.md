@@ -34,6 +34,17 @@ commits require a descriptive body after a blank line, with body lines wrapped a
 72 characters. Merge, Revert, `fixup!`, and `squash!` messages are exempt from the
 body requirement.
 
+For commits implementing or updating a Taskrail task, append only the task's
+short key to the end of the subject as a parenthetical suffix:
+
+```text
+feat: add a focused capability (T-012)
+```
+
+Do not use the full slugged task identifier or put the task key before the
+description. The commit hook validates this convention; it does not append the
+suffix automatically. Commits with no Taskrail task reference may omit it.
+
 Do not add automated attribution, co-author trailers, agent identities, or session
 links to commit history. Lefthook checks the pending author at pre-commit, validates
 the message at commit time, and scans outgoing history before push.
